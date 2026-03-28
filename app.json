@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Qisty",
+    "slug": "Qisty",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/qisty-logo.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/qisty-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/qisty-logo.png",
+        "backgroundImage": "./assets/qisty-logo.png",
+        "monochromeImage": "./assets/qisty-logo.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.qisty"
+    },
+    "web": {
+      "favicon": "./assets/qisty-logo.png"
+    },
+    "plugins": [
+      "expo-localization",
+      "expo-font"
+    ]
+  }
+}
