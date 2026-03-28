@@ -1,4 +1,4 @@
-# Qisty - Installment Management System
+# Qisty - Installment Management for Small Businesses
 
 Qisty is a modern, offline-first mobile application designed for small businesses and individuals to manage installment-based sales with ease, transparency, and professional accuracy. Built with React Native and Expo, it provides a seamless experience for tracking customers, items, payments, and profits.
 
