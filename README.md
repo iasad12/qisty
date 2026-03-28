@@ -64,19 +64,21 @@ Qisty is a modern, offline-first mobile application designed for small businesse
 *   Expo CLI (`npm install -g expo-cli`)
 
 ### Installation
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/qisty.git
-    cd qisty
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Start the development server:
-    ```bash
-    npx expo start
-    ```
+1.  **Download APK**: For a quick start on Android, you can download the latest pre-built APK from the [Releases](https://github.com/iasad12/qisty/releases) section.
+2.  **Manual Setup**:
+    *   Clone the repository:
+        ```bash
+        git clone https://github.com/iasad12/qisty.git
+        cd qisty
+        ```
+    *   Install dependencies:
+        ```bash
+        npm install
+        ```
+    *   Start the development server:
+        ```bash
+        npx expo start
+        ```
 
 ### Building for Production
 To build a release APK locally using Gradle:
