@@ -6,7 +6,11 @@ import { useCurrency } from '../context/CurrencyContext';
 import { dbService } from '../services/dbService';
 import { Item } from '../types';
 import AddItemModal from '../components/AddItemModal';
+import SortModal from '../components/SortModal';
 import { useNavigation } from '@react-navigation/native';
+
+type SortCriteria = 'name' | 'price';
+type SortOrder = 'asc' | 'desc';
 
 const ItemsScreen = () => {
   const { t } = useTranslation();
@@ -17,13 +21,16 @@ const ItemsScreen = () => {
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [isListView, setIsListView] = useState(true);
+  const [sortCriteria, setSortCriteria] = useState<SortCriteria>('name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [sortModalVisible, setSortModalVisible] = useState(false);
 
   const [addItemVisible, setAddItemVisible] = useState(false);
 
   const loadItems = async () => {
     const data = await dbService.getItems();
     setItems(data);
-    setFilteredItems(data);
+    applyFilters(data, searchQuery, sortCriteria, sortOrder);
   };
 
   useEffect(() => {
@@ -36,13 +43,42 @@ const ItemsScreen = () => {
     setRefreshing(false);
   };
 
-  const onChangeSearch = (query: string) => {
-    setSearchQuery(query);
-    const filtered = items.filter(i => i.name.toLowerCase().includes(query.toLowerCase()));
+  const applyFilters = (data: Item[], query: string, criteria: SortCriteria, order: SortOrder) => {
+    let filtered = data.filter(i => i.name.toLowerCase().includes(query.toLowerCase()));
+
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      const aFinalPrice = a.base_price * (1 + a.profit_percentage / 100);
+      const bFinalPrice = b.base_price * (1 + b.profit_percentage / 100);
+
+      switch (criteria) {
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'price':
+          comparison = aFinalPrice - bFinalPrice;
+          break;
+      }
+      return order === 'asc' ? comparison : -comparison;
+    });
+
     setFilteredItems(filtered);
   };
 
+  const onChangeSearch = (query: string) => {
+    setSearchQuery(query);
+    applyFilters(items, query, sortCriteria, sortOrder);
+  };
+
+  const handleSortSave = (criteria: string, order: 'asc' | 'desc') => {
+    setSortCriteria(criteria as SortCriteria);
+    setSortOrder(order);
+    applyFilters(items, searchQuery, criteria as SortCriteria, order);
+  };
+
   const renderItem = ({ item }: { item: Item }) => {
+    const finalPrice = item.base_price * (1 + item.profit_percentage / 100);
+    
     if (isListView) {
       return (
         <Card 
@@ -54,7 +90,12 @@ const ItemsScreen = () => {
             titleStyle={{ fontWeight: 'bold' }}
             description={() => (
               <View>
-                <Text>{currency} {item.base_price.toLocaleString()}</Text>
+                <Text variant="bodySmall">
+                  {t('basePrice')}: {currency} {item.base_price.toLocaleString()}
+                </Text>
+                <Text variant="bodyMedium" style={{ fontWeight: 'bold' }}>
+                  {t('totalPrice')}: {currency} {finalPrice.toLocaleString()}
+                </Text>
                 <Text style={styles.profitText}>+{item.profit_percentage}% Profit</Text>
               </View>
             )}
@@ -89,7 +130,12 @@ const ItemsScreen = () => {
         )}
         <Card.Content>
           <Title numberOfLines={1}>{item.name}</Title>
-          <Paragraph>{currency} {item.base_price.toLocaleString()}</Paragraph>
+          <Text variant="bodySmall">
+            {t('basePrice')}: {currency} {item.base_price.toLocaleString()}
+          </Text>
+          <Paragraph style={{ fontWeight: 'bold' }}>
+            {t('totalPrice')}: {currency} {finalPrice.toLocaleString()}
+          </Paragraph>
           <Paragraph style={styles.profitText}>+{item.profit_percentage}% Profit</Paragraph>
         </Card.Content>
       </Card>
@@ -104,6 +150,12 @@ const ItemsScreen = () => {
           onChangeText={onChangeSearch}
           value={searchQuery}
           style={styles.searchBar}
+        />
+        <IconButton
+          icon="sort-variant"
+          mode="contained-tonal"
+          onPress={() => setSortModalVisible(true)}
+          style={styles.toggleBtn}
         />
         <IconButton
           icon={isListView ? "view-grid" : "view-list"}
@@ -134,6 +186,18 @@ const ItemsScreen = () => {
         visible={addItemVisible}
         onDismiss={() => setAddItemVisible(false)}
         onSuccess={loadItems}
+      />
+
+      <SortModal
+        visible={sortModalVisible}
+        onDismiss={() => setSortModalVisible(false)}
+        onSave={handleSortSave}
+        initialCriteria={sortCriteria}
+        initialOrder={sortOrder}
+        options={[
+          { label: t('sortName'), value: 'name' },
+          { label: t('sortPrice'), value: 'price' },
+        ]}
       />
     </View>
   );

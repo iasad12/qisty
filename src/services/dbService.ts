@@ -4,7 +4,11 @@ import { Customer, Item, InstallmentPlan, Collection, PlanWithDetails, Collectio
 export const dbService = {
   // Customers
   getCustomers: async (): Promise<Customer[]> => {
-    return await db.getAllAsync<Customer>('SELECT * FROM customers ORDER BY name ASC');
+    return await db.getAllAsync<Customer>(`
+      SELECT c.*, (SELECT COUNT(*) FROM installment_plans p WHERE p.customer_id = c.id) as plan_count
+      FROM customers c 
+      ORDER BY name ASC
+    `);
   },
   addCustomer: async (customer: Customer): Promise<number> => {
     const result = await db.runAsync(
@@ -47,7 +51,13 @@ export const dbService = {
   // Installment Plans
   getPlans: async (): Promise<PlanWithDetails[]> => {
     return await db.getAllAsync<PlanWithDetails>(`
-      SELECT p.*, c.name as customer_name, c.phone as customer_phone, c.image_uri as customer_image_uri, i.name as item_name, i.profit_percentage as item_profit_percentage
+      SELECT p.*, 
+             c.name as customer_name, 
+             c.phone as customer_phone, 
+             c.image_uri as customer_image_uri, 
+             (SELECT COUNT(*) FROM installment_plans p2 WHERE p2.customer_id = c.id) as customer_plan_count,
+             i.name as item_name, 
+             i.profit_percentage as item_profit_percentage
       FROM installment_plans p
       JOIN customers c ON p.customer_id = c.id
       JOIN items i ON p.item_id = i.id
@@ -56,7 +66,13 @@ export const dbService = {
   },
   getPlansByCustomer: async (customerId: number): Promise<PlanWithDetails[]> => {
     return await db.getAllAsync<PlanWithDetails>(`
-      SELECT p.*, c.name as customer_name, c.phone as customer_phone, c.image_uri as customer_image_uri, i.name as item_name, i.profit_percentage as item_profit_percentage
+      SELECT p.*, 
+             c.name as customer_name, 
+             c.phone as customer_phone, 
+             c.image_uri as customer_image_uri, 
+             (SELECT COUNT(*) FROM installment_plans p2 WHERE p2.customer_id = c.id) as customer_plan_count,
+             i.name as item_name, 
+             i.profit_percentage as item_profit_percentage
       FROM installment_plans p
       JOIN customers c ON p.customer_id = c.id
       JOIN items i ON p.item_id = i.id
@@ -66,7 +82,13 @@ export const dbService = {
   },
   getPlansByItem: async (itemId: number): Promise<PlanWithDetails[]> => {
     return await db.getAllAsync<PlanWithDetails>(`
-      SELECT p.*, c.name as customer_name, c.phone as customer_phone, c.image_uri as customer_image_uri, i.name as item_name, i.profit_percentage as item_profit_percentage
+      SELECT p.*, 
+             c.name as customer_name, 
+             c.phone as customer_phone, 
+             c.image_uri as customer_image_uri, 
+             (SELECT COUNT(*) FROM installment_plans p2 WHERE p2.customer_id = c.id) as customer_plan_count,
+             i.name as item_name, 
+             i.profit_percentage as item_profit_percentage
       FROM installment_plans p
       JOIN customers c ON p.customer_id = c.id
       JOIN items i ON p.item_id = i.id
@@ -168,7 +190,13 @@ export const dbService = {
       getPendingCollectionsThisMonth: async (): Promise<PlanWithDetails[]> => {
       const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
       return await db.getAllAsync<PlanWithDetails>(`
-      SELECT p.*, c.name as customer_name, c.phone as customer_phone, c.image_uri as customer_image_uri, i.name as item_name, i.profit_percentage as item_profit_percentage
+      SELECT p.*, 
+             c.name as customer_name, 
+             c.phone as customer_phone, 
+             c.image_uri as customer_image_uri, 
+             (SELECT COUNT(*) FROM installment_plans p2 WHERE p2.customer_id = c.id) as customer_plan_count,
+             i.name as item_name, 
+             i.profit_percentage as item_profit_percentage
       FROM installment_plans p
       JOIN customers c ON p.customer_id = c.id
       JOIN items i ON p.item_id = i.id
@@ -217,7 +245,13 @@ export const dbService = {
     // Plans that haven't been paid this month (simplified logic)
     // In a real app, we'd check the last collection date for each plan
     return await db.getAllAsync<PlanWithDetails>(`
-      SELECT p.*, c.name as customer_name, c.phone as customer_phone, c.image_uri as customer_image_uri, i.name as item_name, i.profit_percentage as item_profit_percentage
+      SELECT p.*, 
+             c.name as customer_name, 
+             c.phone as customer_phone, 
+             c.image_uri as customer_image_uri, 
+             (SELECT COUNT(*) FROM installment_plans p2 WHERE p2.customer_id = c.id) as customer_plan_count,
+             i.name as item_name, 
+             i.profit_percentage as item_profit_percentage
       FROM installment_plans p
       JOIN customers c ON p.customer_id = c.id
       JOIN items i ON p.item_id = i.id

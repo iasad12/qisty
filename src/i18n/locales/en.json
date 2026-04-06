@@ -103,6 +103,18 @@
     "next": "Next",
     "back": "Back",
     "skip": "Skip",
-    "startedOn": "Started on"
+    "startedOn": "Started on",
+    "sortBy": "Sort By",
+    "sortName": "Name",
+    "sortCollected": "Collected",
+    "sortMonthsRemaining": "Months Remaining",
+    "sortInstallmentCount": "Number of Installments",
+    "sortPrice": "Price",
+    "asc": "Ascending",
+    "desc": "Descending",
+    "activePlans": "Active Plans",
+    "order": "Order",
+    "done": "Done",
+    "markDepositAsInstallment": "Mark deposit as first installment"
   }
 }

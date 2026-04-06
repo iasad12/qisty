@@ -103,6 +103,18 @@
     "next": "آگے",
     "back": "پیچھے",
     "skip": "چھوڑیں",
-    "startedOn": "آغاز کی تاریخ"
+    "startedOn": "آغاز کی تاریخ",
+    "sortBy": "ترتیب دیں",
+    "sortName": "نام",
+    "sortCollected": "وصول شدہ رقم",
+    "sortMonthsRemaining": "باقی مہینے",
+    "sortInstallmentCount": "کل قسطیں",
+    "sortPrice": "قیمت",
+    "asc": "کم سے زیادہ",
+    "desc": "زیادہ سے کم",
+    "activePlans": "فعال پلانز",
+    "order": "ترتیب",
+    "done": "مکمل",
+    "markDepositAsInstallment": "ڈیپازٹ کو پہلی قسط کے طور پر درج کریں"
   }
 }

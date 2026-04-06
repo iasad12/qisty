@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import { dbService } from '../services/dbService';
 import { Item } from '../types';
+import { useCurrency } from '../context/CurrencyContext';
 
 interface AddItemModalProps {
   visible: boolean;
@@ -15,6 +16,7 @@ interface AddItemModalProps {
 
 const AddItemModal: React.FC<AddItemModalProps> = ({ visible, onDismiss, onSuccess, initialItem }) => {
   const { t } = useTranslation();
+  const { currency } = useCurrency();
   const [name, setName] = useState('');
   const [basePrice, setBasePrice] = useState('');
   const [profit, setProfit] = useState('');
@@ -36,6 +38,15 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ visible, onDismiss, onSucce
       }
     }
   }, [visible, initialItem]);
+
+  const calculateTotalPrice = () => {
+    const base = parseFloat(basePrice);
+    const prof = parseFloat(profit);
+    if (isNaN(base) || isNaN(prof)) return null;
+    return base * (1 + prof / 100);
+  };
+
+  const totalPrice = calculateTotalPrice();
 
   const pickImage = async (useCamera: boolean) => {
     let result;
@@ -116,6 +127,15 @@ const AddItemModal: React.FC<AddItemModalProps> = ({ visible, onDismiss, onSucce
               style={styles.input}
             />
 
+            {totalPrice !== null && (
+              <View style={styles.pricePreview}>
+                <Text variant="bodyMedium">{t('totalPrice')}: </Text>
+                <Text variant="titleMedium" style={styles.boldText}>
+                  {currency} {totalPrice.toLocaleString()}
+                </Text>
+              </View>
+            )}
+
             <View style={styles.imageContainer}>
               {image ? (
                 <Image source={{ uri: image }} style={styles.image} />
@@ -149,6 +169,17 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 12,
+  },
+  pricePreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  boldText: {
+    fontWeight: 'bold',
   },
   imageContainer: {
     alignItems: 'center',

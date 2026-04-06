@@ -96,6 +96,12 @@ const ItemDetailScreen = () => {
             <Text variant="labelSmall" style={styles.statLabel}>{t('basePrice')}</Text>
             <Text variant="bodyLarge">{currency} {item.base_price.toLocaleString()}</Text>
           </View>
+          <View style={styles.statItem}>
+            <Text variant="labelSmall" style={styles.statLabel}>{t('totalPrice')}</Text>
+            <Text variant="bodyLarge" style={styles.successText}>
+              {currency} {(item.base_price * (1 + item.profit_percentage / 100)).toLocaleString()}
+            </Text>
+          </View>
         </View>
 
         <Divider style={styles.divider} />

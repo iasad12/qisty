@@ -3,6 +3,7 @@ export interface Customer {
   name: string;
   phone: string;
   image_uri?: string;
+  plan_count?: number;
 }
 
 export interface Item {
@@ -45,6 +46,7 @@ export interface PlanWithDetails extends InstallmentPlan {
   customer_image_uri?: string;
   item_name: string;
   item_profit_percentage: number;
+  customer_plan_count?: number;
 }
 
 export interface AnalyticsCollection {

@@ -8,6 +8,10 @@ import { dbService } from '../services/dbService';
 import { PlanWithDetails } from '../types';
 import { useNavigation } from '@react-navigation/native';
 import AddPlanModal from '../components/AddPlanModal';
+import SortModal from '../components/SortModal';
+
+type SortCriteria = 'name' | 'collected' | 'remaining';
+type SortOrder = 'asc' | 'desc';
 
 const InstallmentsScreen = () => {
   const { t } = useTranslation();
@@ -17,12 +21,13 @@ const InstallmentsScreen = () => {
   const [plans, setPlans] = useState<PlanWithDetails[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all');
+  const [sortCriteria, setSortCriteria] = useState<SortCriteria>('name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [sortModalVisible, setSortModalVisible] = useState(false);
   const [addPlanVisible, setAddPlanVisible] = useState(false);
 
   const loadPlans = async () => {
-    console.log('Loading plans...');
     const data = await dbService.getPlans();
-    console.log('Plans loaded:', data.length);
     setPlans(data);
   };
 
@@ -46,19 +51,54 @@ const InstallmentsScreen = () => {
     if (filter !== 'all') {
       filtered = filtered.filter(p => p.status === filter);
     }
+
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      const aCollected = a.deposit + (a.months_paid * a.monthly_installment_amount);
+      const bCollected = b.deposit + (b.months_paid * b.monthly_installment_amount);
+      const aRemaining = a.total_months - a.months_paid;
+      const bRemaining = b.total_months - b.months_paid;
+
+      switch (sortCriteria) {
+        case 'name':
+          comparison = a.customer_name.localeCompare(b.customer_name);
+          break;
+        case 'collected':
+          comparison = aCollected - bCollected;
+          break;
+        case 'remaining':
+          comparison = aRemaining - bRemaining;
+          break;
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
     return filtered;
   };
 
   const filteredPlans = getFilteredPlans();
 
+  const handleSortSave = (criteria: string, order: 'asc' | 'desc') => {
+    setSortCriteria(criteria as SortCriteria);
+    setSortOrder(order);
+  };
+
   return (
     <View style={styles.container}>
-      <Searchbar
-        placeholder={t('installments')}
-        onChangeText={setSearchQuery}
-        value={searchQuery}
-        style={styles.searchBar}
-      />
+      <View style={styles.headerRow}>
+        <Searchbar
+          placeholder={t('installments')}
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          style={styles.searchBar}
+        />
+        <IconButton
+          icon="sort-variant"
+          mode="contained-tonal"
+          onPress={() => setSortModalVisible(true)}
+          style={styles.sortBtn}
+        />
+      </View>
       
       <View style={styles.filterContainer}>
         <Chip 
@@ -83,7 +123,16 @@ const InstallmentsScreen = () => {
         keyExtractor={(item) => item.id!.toString()}
         renderItem={({ item }) => (
           <List.Item
-            title={item.customer_name}
+            title={() => (
+              <View style={styles.titleRow}>
+                <Text variant="titleMedium">{item.customer_name}</Text>
+                {(item.customer_plan_count || 0) > 1 && (
+                  <Text style={styles.planCountBadge}>
+                    ({item.customer_plan_count} {t('activePlans')})
+                  </Text>
+                )}
+              </View>
+            )}
             description={`${item.item_name} - ${currency} ${item.monthly_installment_amount}`}
             onPress={() => navigation.navigate('InstallmentDetail', { planId: item.id })}
             left={props => <List.Icon {...props} icon={item.status === 'completed' ? 'check-circle' : 'clock-outline'} color={item.status === 'completed' ? '#4CAF50' : '#2196F3'} />}
@@ -110,6 +159,19 @@ const InstallmentsScreen = () => {
         onDismiss={() => setAddPlanVisible(false)}
         onSuccess={loadPlans}
       />
+
+      <SortModal
+        visible={sortModalVisible}
+        onDismiss={() => setSortModalVisible(false)}
+        onSave={handleSortSave}
+        initialCriteria={sortCriteria}
+        initialOrder={sortOrder}
+        options={[
+          { label: t('sortName'), value: 'name' },
+          { label: t('sortCollected'), value: 'collected' },
+          { label: t('sortMonthsRemaining'), value: 'remaining' },
+        ]}
+      />
     </View>
   );
 };
@@ -118,9 +180,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
   searchBar: {
-    margin: 16,
-    marginBottom: 8,
+    flex: 1,
+  },
+  sortBtn: {
+    marginLeft: 8,
   },
   filterContainer: {
     flexDirection: 'row',
@@ -129,6 +200,15 @@ const styles = StyleSheet.create({
   },
   chip: {
     marginRight: 8,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  planCountBadge: {
+    fontSize: 12,
+    opacity: 0.6,
+    marginLeft: 8,
   },
   itemRight: {
     flexDirection: 'row',
